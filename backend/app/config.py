@@ -2,7 +2,7 @@
 Application configuration loaded from environment variables.
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -27,8 +27,7 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET_NAME: str = ""
     AWS_REGION: str = "us-east-1"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()
