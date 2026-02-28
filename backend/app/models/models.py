@@ -32,6 +32,10 @@ class Job(Base):
     intent: Mapped[str] = mapped_column(String(100)) # e.g. "career" or "growth"
     lead_count: Mapped[int] = mapped_column(Integer, default=100)
     status: Mapped[str] = mapped_column(String(50), default="pending") # pending, processing, completed, failed
+    progress: Mapped[int] = mapped_column(Integer, default=0)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     result_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     raw_resume_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True) # Storing the input text for reference if needed
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))

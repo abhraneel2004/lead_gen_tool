@@ -78,6 +78,7 @@ def test_generate_leads(setup_database):
     assert data["intent"] == "career"
     assert data["lead_count"] == 50
     assert data["status"] == "pending"
+    assert data["progress"] == 0
     assert "id" in data
 
 
@@ -125,3 +126,16 @@ def test_get_job_results_empty(setup_database):
     data = response.json()
     assert isinstance(data, list)
     assert len(data) == 0
+
+
+def test_export_job_results_csv(setup_database):
+    job_id = setup_database["job_id"]
+    response = client.get(f"/api/leads/jobs/{job_id}/export")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/csv; charset=utf-8"
+    assert "attachment; filename=" in response.headers["content-disposition"]
+    
+    # Check CSV header
+    csv_content = response.text
+    assert "ID,Name,Email,Company,Title,Source URL,Confidence%" in csv_content
+    assert "Alice CEO,alice@test.com" in csv_content

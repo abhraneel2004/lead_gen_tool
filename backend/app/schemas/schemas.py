@@ -44,6 +44,10 @@ class JobResponse(BaseModel):
     intent: str
     lead_count: int
     status: str
+    progress: int
+    error_message: Optional[str] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
     result_url: Optional[str] = None
     created_at: datetime
 

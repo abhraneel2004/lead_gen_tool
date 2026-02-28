@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET_NAME: str = ""
     AWS_REGION: str = "us-east-1"
 
+    # Celery Configuration
+    CELERY_BROKER_URL: str = "redis://:redis123@localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://:redis123@localhost:6379/0"
+
     model_config = SettingsConfigDict(env_file=".env")
 
 
