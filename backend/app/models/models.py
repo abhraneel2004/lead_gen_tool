@@ -2,7 +2,7 @@
 SQLAlchemy database models for Users, Jobs, and Leads.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Float, Text
@@ -18,7 +18,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # A user can have many jobs
     jobs: Mapped[List["Job"]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -34,7 +34,7 @@ class Job(Base):
     status: Mapped[str] = mapped_column(String(50), default="pending") # pending, processing, completed, failed
     result_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     raw_resume_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True) # Storing the input text for reference if needed
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     user: Mapped["User"] = relationship(back_populates="jobs")
     leads: Mapped[List["Lead"]] = relationship(back_populates="job", cascade="all, delete-orphan")
@@ -51,6 +51,6 @@ class Lead(Base):
     title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     source_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     confidence: Mapped[float] = mapped_column(Float, default=0.0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     job: Mapped["Job"] = relationship(back_populates="leads")

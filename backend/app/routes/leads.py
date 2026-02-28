@@ -23,16 +23,16 @@ async def generate_leads(
     """Queue a new lead generation job."""
     # TODO: dispatch Celery task with the new Job ID
     
-    # Normally we would retrieve the user from an auth dependency mechanism
-    # Here we are defaulting it to user ID 1 or creating a dummy one for the sake of completeness.
+    # Normally we would retrieve the user from an auth dependency mechanism.
+    # For now, we assume a preconfigured user with ID 1 exists.
     # In a real scenario, remove this block and inject current_user.
     user_stmt = select(User).where(User.id == 1)
     user = db.execute(user_stmt).scalars().first()
     if not user:
-        user = User(email="dummy@example.com", hashed_password="hashed_password", full_name="Dummy User")
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No authenticated user available; configure authentication or user ID 1.",
+        )
 
     new_job = Job(
         user_id=user.id,

@@ -8,12 +8,11 @@ from app.models.models import Job, User, Lead
 from app.config import settings
 from main import app
 
-# We use the actual Postgres database for testing, but ideally this would point to a separate
-# logical database (e.g. `mydb_test`), but for the simplicity of the test container, we'll
-# use the same one, but keep the transactions isolated and clean up.
-# Production grade code often uses a secondary test DB in CI/CD.
-SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
-engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
+# For testing, we append `_test` to the database name so we don't accidentally
+# drop all production tables when running `pytest`.
+original_db = settings.DATABASE_URL.split("/")[-1]
+TEST_SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL.replace(original_db, f"{original_db}_test")
+engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -32,15 +31,17 @@ client = TestClient(app)
 @pytest.fixture(scope="module")
 def setup_database():
     """
-    Setup the database for tests. We drop and recreate tables to ensure a clean slate.
-    Warning: Since this uses the main DB url, it clears data! In a real system you would 
-    use a different database name for tests in your pytest.ini or conftest.py.
+    Setup the isolated test database.
     """
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     
     # Populate dummy data
     db = TestingSessionLocal()
+    
+    # Create variables to share IDs back to the test suite
+    test_state = {}
+    
     try:
         dummy_user = User(email="dummy_test@example.com", hashed_password="hashed_password", full_name="Test User")
         db.add(dummy_user)
@@ -56,10 +57,12 @@ def setup_database():
         dummy_lead2 = Lead(job_id=dummy_job.id, name="Bob CTO", email="bob@test.com", confidence=0.88)
         db.add_all([dummy_lead1, dummy_lead2])
         db.commit()
+        
+        test_state["job_id"] = dummy_job.id
     finally:
         db.close()
         
-    yield
+    yield test_state
     
     # Teardown
     Base.metadata.drop_all(bind=engine)
@@ -80,10 +83,11 @@ def test_generate_leads(setup_database):
 
 def test_get_job_status_existing(setup_database):
     # Fetch the previously populated dummy completed job
-    response = client.get("/api/leads/jobs/1")
+    job_id = setup_database["job_id"]
+    response = client.get(f"/api/leads/jobs/{job_id}")
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == 1
+    assert data["id"] == job_id
     assert data["intent"] == "sales"
     assert data["status"] == "completed"
 
@@ -95,8 +99,9 @@ def test_get_job_not_found(setup_database):
 
 
 def test_get_job_results_populated(setup_database):
-    # Fetch results for the pre-populated sales job (id 1)
-    response = client.get("/api/leads/jobs/1/results")
+    # Fetch results for the pre-populated sales job
+    job_id = setup_database["job_id"]
+    response = client.get(f"/api/leads/jobs/{job_id}/results")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)

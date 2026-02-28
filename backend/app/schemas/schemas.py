@@ -3,9 +3,9 @@ Pydantic schemas for request / response validation.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 # ---------------------------------------------------------------------------
@@ -23,8 +23,7 @@ class UserResponse(BaseModel):
     full_name: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TokenResponse(BaseModel):
@@ -36,8 +35,8 @@ class TokenResponse(BaseModel):
 # Job
 # ---------------------------------------------------------------------------
 class JobCreate(BaseModel):
-    intent: str  # "career" or "growth"
-    lead_count: int = 100
+    intent: Literal["career", "growth", "sales"] = "career"
+    lead_count: int = Field(default=100, ge=1, le=1000)
 
 
 class JobResponse(BaseModel):
@@ -48,8 +47,7 @@ class JobResponse(BaseModel):
     result_url: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------------------------------------------------------------------------
@@ -64,5 +62,4 @@ class LeadResponse(BaseModel):
     source_url: Optional[str] = None
     confidence: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

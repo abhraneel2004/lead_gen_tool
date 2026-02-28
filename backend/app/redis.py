@@ -3,6 +3,7 @@ Redis client connection and utilities.
 """
 
 import logging
+from typing import AsyncGenerator
 
 from redis import asyncio as aioredis
 from redis.exceptions import RedisError
@@ -15,10 +16,10 @@ logger = logging.getLogger(__name__)
 redis_pool = aioredis.ConnectionPool.from_url(
     settings.REDIS_URL,
     decode_responses=True,
-    max_connections=10,
+    max_connections=settings.REDIS_MAX_CONNECTIONS,
 )
 
-async def get_redis() -> aioredis.Redis:
+async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:
     """
     FastAPI dependency that yields a Redis client from the connection pool.
     Includes error handling for Redis connection issues.

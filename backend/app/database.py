@@ -18,8 +18,8 @@ try:
     engine = create_engine(
         settings.DATABASE_URL,
         echo=(settings.APP_ENV == "development"),
-        pool_size=5,             # Default number of connections to keep in the pool
-        max_overflow=10,         # Max number of connections to overflow beyond pool_size
+        pool_size=settings.DB_POOL_SIZE,             # Configured pool size
+        max_overflow=settings.DB_MAX_OVERFLOW,       # Configured max overflow
         pool_timeout=30,         # Timeout in seconds to wait for a connection
         pool_recycle=1800,       # Recycle connections after 30 minutes to prevent stale connections
         pool_pre_ping=True,      # Verify connection validity before using it
