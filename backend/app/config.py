@@ -2,7 +2,7 @@
 Application configuration loaded from environment variables.
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -17,9 +17,12 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/lead_gen_tool"
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 10
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_MAX_CONNECTIONS: int = 10
 
     # AWS S3
     AWS_ACCESS_KEY_ID: str = ""
@@ -27,8 +30,7 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET_NAME: str = ""
     AWS_REGION: str = "us-east-1"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()
