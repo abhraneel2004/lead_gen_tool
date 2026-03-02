@@ -39,11 +39,22 @@ def generate_leads_task(self, job_id: int):
             logger.error(f"Job {job_id} not found in database.")
             return
 
+        # Idempotency Guard: Do not re-process terminated or already processed jobs 
+        if job.status in ["completed", "failed", "cancelled"]:
+            logger.warning(f"Job {job_id} is already in state '{job.status}'. Exiting to prevent duplicate execution.")
+            return
+            
         # 2. Transition job -> PROCESSING
         job.status = "processing"
         job.started_at = datetime.now(timezone.utc)
         job.progress = 0
         db.commit()
+
+        # Cancellation Guard: Check if the job was cancelled just before processing began
+        db.refresh(job)
+        if job.status == "cancelled":
+            logger.info(f"Job {job_id} was cancelled. Halting execution.")
+            return
 
         # 3. Call placeholder scraper
         try:

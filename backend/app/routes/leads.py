@@ -48,12 +48,39 @@ async def generate_leads(
     return new_job
 
 
+from datetime import datetime, timezone
+
 @router.get("/jobs/{job_id}", response_model=JobResponse)
 async def get_job_status(job_id: int, db: Session = Depends(get_db)):
     """Poll the status of a lead-generation job."""
     job = db.get(Job, job_id)
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    
+    return job
+
+
+@router.post("/jobs/{job_id}/cancel", response_model=JobResponse)
+async def cancel_job(job_id: int, db: Session = Depends(get_db)):
+    """Cancel a pending or processing job."""
+    job = db.get(Job, job_id)
+    
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Job not found"
+        )
+        
+    if job.status in ["completed", "failed", "cancelled"]:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, 
+            detail=f"Cannot cancel job in '{job.status}' state."
+        )
+        
+    job.status = "cancelled"
+    job.completed_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(job)
     
     return job
 

@@ -139,3 +139,26 @@ def test_export_job_results_csv(setup_database):
     csv_content = response.text
     assert "ID,Name,Email,Company,Title,Source URL,Confidence%" in csv_content
     assert "Alice CEO,alice@test.com" in csv_content
+
+
+def test_cancel_job_pending(setup_database):
+    # Enqueue a new job and cancel it instantly
+    create_response = client.post(
+        "/api/leads/generate",
+        json={"intent": "sales", "lead_count": 5},
+    )
+    job_id = create_response.json()["id"]
+
+    response = client.post(f"/api/leads/jobs/{job_id}/cancel")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "cancelled"
+    assert data["completed_at"] is not None
+
+
+def test_cancel_job_invalid_state(setup_database):
+    # Attempt to cancel the pre-populated completed job. It should fail.
+    job_id = setup_database["job_id"]
+    response = client.post(f"/api/leads/jobs/{job_id}/cancel")
+    assert response.status_code == 409
+    assert "Cannot cancel job" in response.json()["detail"]
