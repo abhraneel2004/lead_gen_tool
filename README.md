@@ -10,6 +10,7 @@ Lead Gen Tool is an intelligent, open-source lead generation platform built for 
 
 - [🌟 Vision](#-vision)
 - [🔄 Workflow Architecture](#-workflow-architecture)
+- [System Visualization](#-system-visualization)
 - [✨ Key Features](#-key-features)
 - [🛠 Tech Stack](#-tech-stack)
 - [💰 Monetization & Future (Commercial Path)](#-monetization--future-commercial-path)
@@ -32,6 +33,69 @@ The application follows a linear, user-centric flow:
 3.  **Context Injection**: AI parses resumes or business briefs to generate dynamic search parameters.
 4.  **Tiered Selection**: Choose volume (100, 200, 300 leads).
 5.  **Data Fulfillment**: Asynchronous scraping and CSV export.
+
+## System Visualization
+
+**A. Context-Aware Workflow (Sequential)**
+This diagram illustrates the "Intent Engine" logic, showing how raw user data is transformed into structured leads.
+
+```mermaid
+sequenceDiagram
+    participant U as User (Resume/Brief)
+    participant AI as GPT-4o Intent Engine
+    participant Q as Dynamic Query Gen
+    participant S as Playwright Scraper
+    participant D as Data Output (CSV)
+
+    U->>AI: Upload Context
+    AI->>Q: Extract Keywords & Filters
+    Q->>S: Execute Stealth Scraping
+    S->>D: Format & Deduplicate
+    D-->>U: Delivery via S3/Download
+```
+
+**B. System Architecture (Modular)**
+A flowchart showing the decoupling of the frontend, backend, and the asynchronous task queue.
+
+```mermaid
+graph TD
+    subgraph Frontend
+        A[Next.js 14 App]
+    end
+    subgraph Backend_Cluster
+        B[FastAPI/Node.js Server]
+        C[Redis Task Queue]
+    end
+    subgraph Workers
+        D[Playwright Stealth Workers]
+    end
+    subgraph Storage
+        E[(PostgreSQL)]
+        F[AWS S3]
+    end
+
+    A <-->|API Requests| B
+    B -->|Push Task| C
+    C -->|Pull Task| D
+    D -->|Store Leads| E
+    D -->|Export CSV| F
+```
+
+**C. Monetization & Lead Funnel (State Diagram)**
+This diagram visualizes the transition from the open-source competition phase to a proprietary SaaS model.
+
+```mermaid
+stateDiagram-v2
+    [*] --> FreeTier: Apertre 3.0 Phase
+    FreeTier --> UserIntent: Context Analysis
+    UserIntent --> Fulfillment: Lead Extraction
+    
+    state Proprietary_SaaS {
+        Fulfillment --> StripeGate: Credit Exhausted
+        StripeGate --> PremiumTier: Payment Success
+        PremiumTier --> AdvancedFeatures: CRM Sync/Team Access
+    }
+```
 
 ## ✨ Key Features
 
