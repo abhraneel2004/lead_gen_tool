@@ -10,7 +10,9 @@ class Settings(BaseSettings):
 
     # App
     APP_ENV: str = "development"
-    APP_SECRET_KEY: str = "change-me"
+    APP_SECRET_KEY: str = "your-super-secret-key-that-is-at-least-32-bytes-long"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # OpenAI
     OPENAI_API_KEY: str = ""

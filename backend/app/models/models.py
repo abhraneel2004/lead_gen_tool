@@ -5,7 +5,7 @@ SQLAlchemy database models for Users, Jobs, and Leads.
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from sqlalchemy import String, Integer, DateTime, ForeignKey, Float, Text
+from sqlalchemy import String, Integer, DateTime, ForeignKey, Float, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -18,6 +18,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # A user can have many jobs
