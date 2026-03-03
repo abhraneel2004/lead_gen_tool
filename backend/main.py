@@ -5,7 +5,8 @@ Lead Gen Tool — Backend Entry Point
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import auth, leads, upload
+from app.auth.router import router as auth_router
+from app.routes import leads, upload
 
 app = FastAPI(
     title="Lead Gen Tool API",
@@ -27,7 +28,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Routers
 # ---------------------------------------------------------------------------
-app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(leads.router, prefix="/api/leads", tags=["Leads"])
 app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
 
